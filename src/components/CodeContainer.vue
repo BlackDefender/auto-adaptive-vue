@@ -5,7 +5,7 @@
                 <ExpandIcon></ExpandIcon>
                 <CompressIcon></CompressIcon>
             </button>
-            <textarea v-bind:value="value" v-on="inputListeners"></textarea>
+            <textarea v-bind:value="value" @input="$emit('input', $event.target.value)"></textarea>
         </div>
     </div>
 </template>
@@ -27,16 +27,6 @@ export default {
     methods: {
         expand () {
             this.isExpanded = !this.isExpanded
-        }
-    },
-    computed: {
-        inputListeners: function () {
-            return Object.assign({},
-                this.$listeners,
-                {
-                    input: event => this.$emit('input', event.target.value)
-                }
-            )
         }
     }
 }
