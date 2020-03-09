@@ -4,6 +4,7 @@ import StyleProperty from './StyleProperty'
 import MediaNode from './MediaNode'
 import Logger from './Logger'
 import Settings from './Settings'
+import PseudoStyleNode from './PseudoStyleNode'
 
 export default class SCSS {
     constructor (scss) {
@@ -34,9 +35,12 @@ export default class SCSS {
             const diff = openBraketsCount - closeBraketsCount
             dataString += `\n}`.repeat(diff)
         }
-        // Удаляем комментарии, разбиваем на строки, обрезаем строки и удаляем пустые
+        // Удаляем комментарии, однострочные правила разносим на разные строки, разбиваем на строки, обрезаем строки и удаляем пустые
         const commentRegExp = /\/\*[\s\S]*?\*\/|\/\/.*$/gm
-        const dataArray = dataString.replace(commentRegExp, '')
+        const singleLineStyleRule = /^([^{}\n]+){([^{}\n]*)}$/gm
+        const dataArray = dataString
+            .replace(commentRegExp, '')
+            .replace(singleLineStyleRule, '$1{\n$2\n}')
             .split('\n')
             .map(str => str.trim())
             .filter(str => str !== '')
@@ -71,47 +75,41 @@ export default class SCSS {
             if (dataItem === undefined) return
             if (dataItem === '}') {
                 currentNode = currentNode.parentNode
-                if (currentNode.parentNode !== null) {
-                    parseDataItem(data.shift())
-                }
                 return
             }
             if (selectorStartSymbols.includes(dataItem.charAt(0))) {
                 const node = createStyleNode(dataItem)
                 currentNode.appendChild(node)
                 currentNode = node
-                parseDataItem(data.shift())
                 return
             }
             if (textStartSymbols.includes(dataItem.charAt(0))) {
                 currentNode.appendProperty(new TextNode(dataItem))
-                parseDataItem(data.shift())
                 return
             }
             /* if(dataItem.charAt(0) === '&'){} */
             if (dataItem.includes(':') && this.allCSSProperties.includes(dataItem.split(':')[0].trim())) {
                 currentNode.appendProperty(new StyleProperty(dataItem))
-                parseDataItem(data.shift())
             } else {
                 const node = createStyleNode(dataItem)
                 currentNode.appendChild(node)
                 currentNode = node
-                parseDataItem(data.shift())
-                // return;
             }
         }
 
-        const settings = Settings.getInstance()
+        const parseData = () => {
+            data.forEach(item => parseDataItem(item))
+        }
 
+        const settings = Settings.getInstance()
         if (settings.wrapIntoMedia) {
             currentNode = new MediaNode(settings.fromWidth)
-            parseDataItem(data.shift())
+            parseData()
             return currentNode
         } else {
-            currentNode = new StyleNode('')
-            parseDataItem(data.shift())
-            currentNode.childNodes[0].parentNode = null
-            return currentNode.childNodes[0]
+            currentNode = new PseudoStyleNode()
+            parseData()
+            return currentNode
         }
     }
 }

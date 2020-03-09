@@ -12,6 +12,7 @@ export default class StyleNode {
         this.childNodes = []
         this.properties = []
         this.parentNode = parentNode
+        this._levelComputingStartValue = 0
     }
 
     appendChild (node) {
@@ -56,7 +57,7 @@ export default class StyleNode {
     get _level () {
         return (function countNodeLevel (node, level) {
             return (node.parentNode === null) ? level : countNodeLevel(node.parentNode, ++level)
-        })(this, 0)
+        })(this, this._levelComputingStartValue)
     }
 
     get fullSelector () {

@@ -10,19 +10,19 @@
 
             <div class="text-input-container base-selector-container">
                 <span class="input-title">Base selector: </span>
-                <input type="text" class="text-input" v-model="settings.baseSelector" @focus="$event.target.select()">
+                <input type="text" class="text-input" :value="settings.baseSelector" @input="onSettingChange('baseSelector', $event.target.value)" @focus="$event.target.select()">
             </div>
 
             <div class="text-input-container">
                 <span class="input-title">From: </span>
-                <input type="number" class="text-input" v-model="settings.fromWidth" @focus="$event.target.select()">
+                <input type="number" class="text-input" :value="settings.fromWidth" @input="onSettingChange('fromWidth', $event.target.value)" @focus="$event.target.select()">
                 <div class="dimension">px</div>
             </div>
             <div class="text-input-container">
                 <span class="input-title">To: </span>
                 <input type="number" class="text-input" v-model="settings.toWidth" @focus="$event.target.select()" v-bind:disabled="toWidthByWindowWidth">
                 <div class="dimension">px</div>
-                <Checkbox title="Use window width" v-model="toWidthByWindowWidth"></Checkbox>
+                <Checkbox setting-title="Use window width" setting-name="toWidthByWindowWidth" :setting-initial-value="toWidthByWindowWidth" @change="onWhichWidthUseSettingChange"></Checkbox>
             </div>
             <div class="input-title">Input SCSS:</div>
             <CodeContainer v-model="input"></CodeContainer>
@@ -31,35 +31,33 @@
 
             <div class="settings-container">
                 <div class="settings-section">
-                    <Checkbox title="Copy result to clipboard" v-model="settings.copyToClipboard"></Checkbox>
-                    <Checkbox title="Wrap into @media" v-model="settings.wrapIntoMedia"></Checkbox>
-                    <Checkbox title="Add unlock" v-model="settings.addUnlock"></Checkbox>
-                    <Checkbox title="Unlock to start value" v-model="settings.unlockToStartValue"></Checkbox>
-                    <Checkbox title="Shake" v-model="settings.shake"></Checkbox>
+                    <Checkbox setting-title="Copy result to clipboard" setting-name="copyToClipboard" :setting-initial-value="settings.copyToClipboard" @change="onSettingChange"></Checkbox>
+                    <Checkbox setting-title="Wrap into @media" setting-name="wrapIntoMedia" :setting-initial-value="settings.wrapIntoMedia" @change="onSettingChange"></Checkbox>
+                    <Checkbox setting-title="Add unlock" setting-name="addUnlock" :setting-initial-value="settings.addUnlock" @change="onSettingChange"></Checkbox>
+                    <Checkbox setting-title="Unlock to start value" setting-name="unlockToStartValue" :setting-initial-value="settings.unlockToStartValue" @change="onSettingChange"></Checkbox>
+                    <Checkbox setting-title="Shake" setting-name="shake" :setting-initial-value="settings.shake" @change="onSettingChange"></Checkbox>
                 </div>
                 <div class="settings-section">
                     <div class="indent-title">Output indent</div>
-                    <RadioButton title="4 spaces" :initial-value="4" v-model="settings.indentSize"></RadioButton>
-                    <RadioButton title="2 spaces" :initial-value="2" v-model="settings.indentSize"></RadioButton>
+                    <RadioButton setting-name="indentSize" setting-title="4 spaces" :setting-initial-value="settings.indentSize" :value="4" @change="onSettingChange"></RadioButton>
+                    <RadioButton setting-name="indentSize" setting-title="2 spaces" :setting-initial-value="settings.indentSize" :value="2" @change="onSettingChange"></RadioButton>
                 </div>
             </div>
 
-            <button class="calculate-button" type="button" @click="calculate">Calculate</button>
-            <div id="auto-adaptive-log"></div>
-
-            <div class="loading" :class="{active: loading}">
-                <SpinnerIcon></SpinnerIcon>
-            </div>
+            <button class="calculate-button" type="button" @click="calculate" ref="calculateButton">
+                <span class="normal-text">Calculate</span>
+                <span class="done-text">Done!</span>
+            </button>
+            <div class="auto-adaptive-log" ref="logContainer"></div>
         </div>
     </div>
 </template>
 
 <script>
-import SpinnerIcon from './assets/spinner.svg'
 import CodeContainer from './components/CodeContainer'
 import Checkbox from './components/Checkbox'
 import RadioButton from './components/RadioButton'
-
+import Logger from './engine/classes/Logger'
 import makeAdaptive from './engine/makeAdaptive'
 import loadSettingsFromLocalStorage from './loadSettingsFromLocalStorage'
 import textToClipboard from './textToClipboard'
@@ -80,27 +78,21 @@ export default {
         },
         input: '',
         output: '',
-        loading: false,
+        calculateButtonIsBlocked: false,
         toWidthByWindowWidth: false
     }),
     components: {
-        SpinnerIcon,
         CodeContainer,
         Checkbox,
         RadioButton
     },
-    watch: {
-        settings: {
-            handler: function () {
-                this.saveSettings()
-            },
-            deep: true
-        },
-        toWidthByWindowWidth: function (val) {
-            if (val) this.settings.toWidth = window.innerWidth
-        }
-    },
     methods: {
+        onWhichWidthUseSettingChange (settingName, settingValue) {
+            this.toWidthByWindowWidth = !this.toWidthByWindowWidth
+            if (this.toWidthByWindowWidth) {
+                this.settings.toWidth = window.innerWidth
+            }
+        },
         toggleActive () {
             this.isActive = !this.isActive
         },
@@ -124,14 +116,24 @@ export default {
             return config
         },
         calculate () {
-            this.loading = true
+            if (this.calculateButtonIsBlocked) return
+            this.calculateButtonIsBlocked = true
             this.output = ''
-            const result = makeAdaptive(this.input, this.getConfig())
-            this.output = result.output
-            if (this.settings.copyToClipboard) {
-                textToClipboard(result.output)
+            try {
+                const result = makeAdaptive(this.input, this.getConfig())
+                this.output = result.output
+                if (this.settings.copyToClipboard) {
+                    textToClipboard(result.output)
+                }
+            } catch (e) {
+                Logger.getInstance().log(e.toString())
             }
-            this.loading = false
+            this.$refs.logContainer.innerHTML = Logger.getInstance().getLogsFormatted()
+            this.$refs.calculateButton.classList.add('animated')
+            setTimeout(() => {
+                this.calculateButtonIsBlocked = false
+                this.$refs.calculateButton.classList.remove('animated')
+            }, 1000)
         }
     },
     beforeMount () {
@@ -152,15 +154,6 @@ export default {
 
 <style lang="scss">
     $gray: #999999;
-
-    @keyframes auto-adaptive-loading-spinner {
-        0%{
-            transform: rotate(0deg);
-        }
-        100%{
-            transform: rotate(360deg);
-        }
-    }
 
     #auto-adaptive-app {
         display: none;
@@ -311,6 +304,7 @@ export default {
             }
 
             .calculate-button {
+                position: relative;
                 display: block;
                 width: 100%;
                 height: 40px;
@@ -321,36 +315,37 @@ export default {
                 color: #fff;
                 cursor: pointer;
                 transition: background-color 0.3s;
-
+                overflow: hidden;
+                .normal-text,
+                .done-text{
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    margin: auto;
+                    transition: transform 0.3s;
+                    line-height: 40px;
+                }
+                .done-text{
+                    transform: translate(0, 40px);
+                }
                 &:hover {
                     background-color: darken(#2E7E3B, 10%);
                 }
-            }
-
-            .loading{
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(222,222,222,0.31);
-                opacity: 0;
-                visibility: hidden;
-                transition-property: opacity, visibility;
-                transition-duration: 0.3s;
-                svg{
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    width: 50px;
-                    height: 50px;
-                    margin: -25px 0 0 -25px;
-                    color: #000000;
-                    animation: auto-adaptive-loading-spinner 1s steps(8, start) infinite;
+                &.animated{
+                    .normal-text{
+                        transform: translate(0, -40px);
+                    }
+                    .done-text{
+                        transform: translate(0, 0);
+                    }
                 }
-                &.active{
-                    visibility: visible;
-                    opacity: 1;
+            }
+            .auto-adaptive-log{
+                .log-message{
+                    padding: 5px 0;
+                    font-size: 16px;
                 }
             }
         }
