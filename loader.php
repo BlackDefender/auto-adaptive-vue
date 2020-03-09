@@ -35,7 +35,7 @@ $baseUrl = (isset($_SERVER['HTTPS']) ? 'https' : 'http') .'://'.$_SERVER['SERVER
 /*
 document.addEventListener('DOMContentLoaded', () => {
     const loader = document.createElement('script');
-    loader.src = 'https://synergy.od.ua/auto-adaptive/loader.js';
+    loader.src = 'https://auto-adaptive-vue.synergy.od.ua/loader.js';
     document.head.appendChild(loader);
 });
 
