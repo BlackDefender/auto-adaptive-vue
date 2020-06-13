@@ -47,16 +47,16 @@ export default class BrowserStyles {
         let styles = {}
 
         const styleRuleMatchSelector = (styleRule) => {
-            return styleRule.selectorText === selector
-                || styleRule.selectorText.split(',').map(item => item.trim()).includes(selector)
-                || this.constructor._selectorsAsArraysAreEqual(styleRule.selectorText, selector)
+            return styleRule.selectorText === selector ||
+                styleRule.selectorText.split(',').map(item => item.trim()).includes(selector) ||
+                this.constructor._selectorsAsArraysAreEqual(styleRule.selectorText, selector)
         }
 
         const parseStylesheet = (styleSheet) => {
             Array.from(styleSheet.cssRules)
                 .filter(styleRule => styleRule.constructor === CSSStyleRule)
                 .filter(styleRule => styleRuleMatchSelector(styleRule))
-                .forEach(styleRule => styles = styleRule.style)
+                .forEach(styleRule => { styles = styleRule.style })
 
             Array.from(styleSheet.cssRules)
                 .filter(styleRule => styleRule.constructor === CSSMediaRule)

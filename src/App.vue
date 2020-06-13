@@ -18,7 +18,7 @@
                 <input type="number" class="text-input" :value="settings.fromWidth" @input="onSettingChange('fromWidth', $event.target.value)" @focus="$event.target.select()">
                 <div class="dimension">px</div>
             </div>
-            <div class="text-input-container">
+            <div class="text-input-container input-container-width-checkbox">
                 <span class="input-title">To: </span>
                 <input type="number" class="text-input" v-model="settings.toWidth" @focus="$event.target.select()" v-bind:disabled="toWidthByWindowWidth">
                 <div class="dimension">px</div>
@@ -262,7 +262,6 @@ export default {
             .text-input-container {
                 display: flex;
                 align-items: center;
-                //justify-content: space-between;
                 margin: 0 0 10px;
 
                 .input-title {
@@ -343,9 +342,27 @@ export default {
                 }
             }
             .auto-adaptive-log{
+                max-height: 200px;
+                overflow: auto;
                 .log-message{
                     padding: 5px 0;
                     font-size: 16px;
+                }
+            }
+        }
+    }
+
+    @media (max-width: 360px) {
+        #auto-adaptive-app{
+            .window-body{
+                .text-input-container{
+                    &.input-container-width-checkbox{
+                        flex-wrap: wrap;
+                        .checkbox-container{
+                            width: 100%;
+                            margin: 10px 0 0 100px;
+                        }
+                    }
                 }
             }
         }

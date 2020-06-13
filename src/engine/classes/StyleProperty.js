@@ -81,16 +81,32 @@ export default class StyleProperty {
         return `calc(${fromVal}px + (${fromVal} - ${toVal}) * (100vw - ${fromWidth}px) / (${fromWidth} - ${toWidth}))`
     };
 
+    static valueByIndex (propertyString, index) {
+        const propertyArray = propertyString.split(' ')
+        if (propertyArray[index] !== undefined) return propertyArray[index]
+        if (index === 1 || index === 2) return propertyArray[0]
+        if (index === 3 && propertyArray[1] !== undefined) return propertyArray[1]
+        else return propertyArray[0]
+    }
+
+    static cssLockStringSeparator (lock) {
+        let calcCount = 0
+        lock.forEach((item) => {
+            if (item.includes('calc')) calcCount += 1
+        })
+        return calcCount >= 2 ? '\n' : ' '
+    }
+
     static makeCssLockString (fromStr, toStr, fromWidth, toWidth) {
         const fromArray = fromStr.split(' ')
-        const toArray = toStr.split(' ')
-        let lock = ''
+        let lock = []
         for (let i = 0; i < fromArray.length; ++i) {
-            if (toArray[i] === undefined) break
-            if (i > 0) lock += ' '
-            lock += this.makeString(fromArray[i], toArray[i], fromWidth, toWidth)
+            const toValue = this.valueByIndex(toStr, i)
+            lock.push(this.makeString(fromArray[i], toValue, fromWidth, toWidth))
         }
-        return lock
+        if (lock.length === 1) return lock[0]
+        const separator = this.cssLockStringSeparator(lock)
+        return lock.join(separator)
     };
 
     cssLockAvailable () {
@@ -100,6 +116,8 @@ export default class StyleProperty {
             'border-right-width',
             'border-left-width',
             'border-bottom-width',
+            'border-radius',
+            'bottom',
             'flex-basis',
             'font-size',
             'height',

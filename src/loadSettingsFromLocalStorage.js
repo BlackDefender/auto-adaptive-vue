@@ -11,7 +11,9 @@ const loadSettingsFromLocalStorage = (storageKey, defaultSettings) => {
                     }
                 }
             } catch (e) {
+                // eslint-disable-next-line
                 console.error('Settings can\'t be loaded. Use default settings.')
+                // eslint-disable-next-line
                 console.error(e)
                 return defaultSettings
             }
