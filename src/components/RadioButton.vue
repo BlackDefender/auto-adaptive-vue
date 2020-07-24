@@ -1,25 +1,32 @@
 <template>
     <label class="radio-button-container">
-        <input type="radio" :value="value" :name="settingName" @click="onClick" :checked="{checked}">
-        <span class="radio-button"></span>
-        <span>{{ settingTitle }}</span>
+        <input type="radio" :checked="{checked}" @click="$emit('input', ownValue)">
+        <span class="radio-button" :class="{checked}"></span>
+        <span>{{ title }}</span>
     </label>
 </template>
 
 <script>
 export default {
     name: 'RadioButton',
-    props: ['setting-name', 'setting-title', 'value', 'setting-initial-value'],
-    data: () => ({
-        checked: false
-    }),
-    methods: {
-        onClick () {
-            this.$emit('change', this.settingName, this.value)
+    props: {
+        title: {
+            type: String,
+            required: true
+        },
+        value: {
+            type: Number,
+            required: true
+        },
+        ownValue: {
+            type: Number,
+            required: true
         }
     },
-    mounted () {
-        this.checked = this.value === this.settingInitialValue
+    computed: {
+        checked () {
+            return this.value === this.ownValue
+        }
     }
 }
 </script>
@@ -55,11 +62,16 @@ export default {
                 opacity: 0;
                 transition: opacity .3s;
             }
+            &.checked{
+                &::before{
+                    opacity: 1;
+                }
+            }
         }
-        input[type="radio"]:checked ~ .radio-button{
+        /*input[type="radio"]:checked ~ .radio-button{
             &::before{
                 opacity: 1;
             }
-        }
+        }*/
     }
 </style>

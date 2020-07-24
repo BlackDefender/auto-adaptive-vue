@@ -1,29 +1,23 @@
 <template>
-    <label class="checkbox-container" @click="toggleCheck">
-        <span class="checkbox" :class="{checked:isChecked}"></span>
-        {{this.settingTitle}}
+    <label class="checkbox-container">
+        <input type="checkbox" :checked="value" @input="$emit('input', $event.target.checked)">
+        <span class="checkbox" :class="{checked: value}"></span>
+        {{this.title}}
     </label>
 </template>
 
 <script>
 export default {
     name: 'Checkbox',
-    props: [
-        'setting-title',
-        'setting-name',
-        'setting-initial-value'
-    ],
-    data: () => ({
-        isChecked: false
-    }),
-    methods: {
-        toggleCheck () {
-            this.isChecked = !this.isChecked
-            this.$emit('change', this.settingName, this.isChecked)
+    props: {
+        title: {
+            type: String,
+            required: true
+        },
+        value: {
+            type: Boolean,
+            required: true
         }
-    },
-    mounted () {
-        this.isChecked = this.settingInitialValue
     }
 }
 </script>
@@ -36,6 +30,9 @@ export default {
         cursor: pointer;
         &:nth-child(n+2){
             margin: 3px 0 0 0;
+        }
+        input[type="checkbox"] {
+            display: none;
         }
         .checkbox {
             position: relative;

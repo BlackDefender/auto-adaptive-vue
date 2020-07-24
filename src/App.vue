@@ -10,19 +10,19 @@
 
             <div class="text-input-container base-selector-container">
                 <span class="input-title">Base selector: </span>
-                <input type="text" class="text-input" :value="settings.baseSelector" @input="onSettingChange('baseSelector', $event.target.value)" @focus="$event.target.select()">
+                <input type="text" class="text-input" v-model="settings.baseSelector" @focus="$event.target.select()">
             </div>
 
             <div class="text-input-container">
                 <span class="input-title">From: </span>
-                <input type="number" class="text-input" :value="settings.fromWidth" @input="onSettingChange('fromWidth', $event.target.value)" @focus="$event.target.select()">
+                <input type="number" class="text-input" v-model="settings.fromWidth" @focus="$event.target.select()">
                 <div class="dimension">px</div>
             </div>
             <div class="text-input-container input-container-width-checkbox">
                 <span class="input-title">To: </span>
                 <input type="number" class="text-input" v-model="settings.toWidth" @focus="$event.target.select()" v-bind:disabled="toWidthByWindowWidth">
                 <div class="dimension">px</div>
-                <Checkbox setting-title="Use window width" setting-name="toWidthByWindowWidth" :setting-initial-value="toWidthByWindowWidth" @change="onWhichWidthUseSettingChange"></Checkbox>
+                <Checkbox title="Use window width" v-model="toWidthByWindowWidth"></Checkbox>
             </div>
             <div class="input-title">Input SCSS:</div>
             <CodeContainer v-model="input"></CodeContainer>
@@ -31,16 +31,16 @@
 
             <div class="settings-container">
                 <div class="settings-section">
-                    <Checkbox setting-title="Copy result to clipboard" setting-name="copyToClipboard" :setting-initial-value="settings.copyToClipboard" @change="onSettingChange"></Checkbox>
-                    <Checkbox setting-title="Wrap into @media" setting-name="wrapIntoMedia" :setting-initial-value="settings.wrapIntoMedia" @change="onSettingChange"></Checkbox>
-                    <Checkbox setting-title="Add unlock" setting-name="addUnlock" :setting-initial-value="settings.addUnlock" @change="onSettingChange"></Checkbox>
-                    <Checkbox setting-title="Unlock to start value" setting-name="unlockToStartValue" :setting-initial-value="settings.unlockToStartValue" @change="onSettingChange"></Checkbox>
-                    <Checkbox setting-title="Shake" setting-name="shake" :setting-initial-value="settings.shake" @change="onSettingChange"></Checkbox>
+                    <Checkbox title="Copy result to clipboard" v-model="settings.copyToClipboard"></Checkbox>
+                    <Checkbox title="Wrap into @media" v-model="settings.wrapIntoMedia"></Checkbox>
+                    <Checkbox title="Add unlock" v-model="settings.addUnlock"></Checkbox>
+                    <Checkbox title="Unlock to start value" v-model="settings.unlockToStartValue"></Checkbox>
+                    <Checkbox title="Shake" v-model="settings.shake"></Checkbox>
                 </div>
                 <div class="settings-section">
                     <div class="indent-title">Output indent</div>
-                    <RadioButton setting-name="indentSize" setting-title="4 spaces" :setting-initial-value="settings.indentSize" :value="4" @change="onSettingChange"></RadioButton>
-                    <RadioButton setting-name="indentSize" setting-title="2 spaces" :setting-initial-value="settings.indentSize" :value="2" @change="onSettingChange"></RadioButton>
+                    <RadioButton title="4 spaces" v-model="settings.indentSize" :own-value="4"></RadioButton>
+                    <RadioButton title="2 spaces" v-model="settings.indentSize" :own-value="2"></RadioButton>
                 </div>
             </div>
 
@@ -86,26 +86,16 @@ export default {
         Checkbox,
         RadioButton
     },
-    methods: {
-        onWhichWidthUseSettingChange (settingName, settingValue) {
-            this.toWidthByWindowWidth = !this.toWidthByWindowWidth
-            if (this.toWidthByWindowWidth) {
+    watch: {
+        toWidthByWindowWidth: function (newVal) {
+            if (newVal) {
                 this.settings.toWidth = window.innerWidth
             }
-        },
+        }
+    },
+    methods: {
         toggleActive () {
             this.isActive = !this.isActive
-        },
-        onSettingChange (settingName, settingValue) {
-            this.settings[settingName] = settingValue
-            this.saveSettings()
-        },
-        saveSettings () {
-            localStorage.setItem('autoAdaptiveSettings', JSON.stringify(this.settings))
-        },
-        loadSettings () {
-            const settings = loadSettingsFromLocalStorage('autoAdaptiveSettings', this.defaultSettings())
-            Object.keys(settings).forEach(propertyName => { this.settings[propertyName] = settings[propertyName] })
         },
         defaultSettings () {
             return Object.assign({}, this.settings)
@@ -137,7 +127,15 @@ export default {
         }
     },
     beforeMount () {
-        this.loadSettings()
+        const settings = loadSettingsFromLocalStorage('autoAdaptiveSettings', this.defaultSettings())
+        const handler = {
+            set (target, prop, val) {
+                target[prop] = val
+                localStorage.setItem('autoAdaptiveSettings', JSON.stringify(target))
+                return true
+            }
+        }
+        this.settings = new Proxy(settings, handler)
     },
     mounted () {
         document.addEventListener('keyup', e => {
