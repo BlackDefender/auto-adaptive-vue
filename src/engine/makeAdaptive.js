@@ -25,6 +25,7 @@ const makeAdaptive = (input, config) => {
     if (settings.addUnlock) {
         let unlock = `\n\n`
         if (styleTree.constructor === MediaNode) styleTree.setWidth(settings.toWidth)
+        styleTree.shake()
         unlock += styleTree.toUnlockString()
         output += unlock
     }
