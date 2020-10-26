@@ -103,7 +103,7 @@ export default class SCSS {
 
         const settings = Settings.getInstance()
         if (settings.wrapIntoMedia) {
-            currentNode = new MediaNode(settings.fromWidth)
+            currentNode = new MediaNode(settings.fromWidth, settings.toWidth)
             parseData()
             return currentNode
         } else {
