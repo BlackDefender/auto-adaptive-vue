@@ -37,6 +37,13 @@ export default class StyleProperty {
         }).join(' ')
     }
 
+    static prepareValueToUnlock (value) {
+        return value
+            .split(' ')
+            .map(item => parseInt(item) === 0 ? 0 : item)
+            .join(' ')
+    }
+
     addNewValue (newValueObj) {
         const newValue = newValueObj.element || newValueObj.stylesheet || newValueObj.computed
 
@@ -66,8 +73,8 @@ export default class StyleProperty {
     }
 
     toUnlockString () {
-        if (Settings.getInstance().unlockToStartValue) return `${this.name}: ${this.value};`
-        if (this.newValue) return `${this.name}: ${this.newValue};`
+        if (Settings.getInstance().unlockToStartValue) return `${this.name}: ${this.constructor.prepareValueToUnlock(this.value)};`
+        if (this.newValue) return `${this.name}: ${this.constructor.prepareValueToUnlock(this.newValue)};`
         return null
     }
 
