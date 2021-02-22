@@ -33,7 +33,7 @@ export default class StyleNode {
         for (let i = this.childNodes.length - 1; i >= 0; --i) {
             this.childNodes[i].shake()
         }
-        if (this.childNodes.length === 0 && this.properties.length === 0) {
+        if (this.childNodes.length === 0 && this.properties.length === 0 && this.parentNode) {
             this.parentNode.removeChild(this)
         }
     }

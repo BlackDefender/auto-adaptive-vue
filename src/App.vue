@@ -8,6 +8,11 @@
         </div>
         <div class="window-body">
 
+            <div class="text-input-container">
+                <span class="input-title">Layout width: </span>
+                <input type="number" class="text-input" v-model="settings.layoutWidth" @focus="$event.target.select()">
+            </div>
+
             <div class="text-input-container base-selector-container">
                 <span class="input-title">Base selector: </span>
                 <input type="text" class="text-input" v-model="settings.baseSelector" @focus="$event.target.select()">
@@ -41,6 +46,10 @@
                     <div class="indent-title">Output indent</div>
                     <RadioButton title="4 spaces" v-model="settings.indentSize" :own-value="4"></RadioButton>
                     <RadioButton title="2 spaces" v-model="settings.indentSize" :own-value="2"></RadioButton>
+                    <br>
+                    <div class="indent-title">Parser</div>
+                    <RadioButton title="AST" v-model="settings.parser" :own-value="'ast'"></RadioButton>
+                    <RadioButton title="LineByLine" v-model="settings.parser" :own-value="'lbl'"></RadioButton>
                 </div>
             </div>
 
@@ -74,7 +83,9 @@ export default {
             addUnlock: true,
             wrapIntoMedia: true,
             shake: true,
-            unlockToStartValue: false
+            unlockToStartValue: false,
+            layoutWidth: '',
+            parser: 'ast'
         },
         input: '',
         output: '',
@@ -96,6 +107,7 @@ export default {
     methods: {
         toggleActive () {
             this.isActive = !this.isActive
+            window.dispatchEvent(new Event('autoAdaptiveWasToggled'))
         },
         defaultSettings () {
             return Object.assign({}, this.settings)
@@ -117,6 +129,8 @@ export default {
                 }
             } catch (e) {
                 Logger.getInstance().log(e.toString())
+                // eslint-disable-next-line no-console
+                console.error(e)
             }
             this.$refs.logContainer.innerHTML = Logger.getInstance().getLogsFormatted()
             this.$refs.calculateButton.classList.add('animated')
@@ -145,6 +159,9 @@ export default {
             if (this.toWidthByWindowWidth) {
                 this.settings.toWidth = window.innerWidth
             }
+        })
+        window.addEventListener('toggleAutoAdaptive', e => {
+            this.toggleActive()
         })
     }
 }
@@ -184,7 +201,6 @@ export default {
             .window-title {
                 padding: 0 0 0 10px;
                 width: calc(100% - 40px);
-                cursor: all-scroll;
                 font-size: 20px;
                 line-height: 40px;
             }

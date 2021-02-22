@@ -48,6 +48,8 @@ export default class StyleProperty {
         const newValue = newValueObj.element || newValueObj.stylesheet || newValueObj.computed
 
         if (!this.cssLockAvailable() ||
+            newValue === undefined ||
+            newValue === '' ||
             this.constructor.isHEXColor(newValue) ||
             this.constructor.isVariable(newValue) ||
             (this.name === 'line-height' && this.constructor.isDimensionless(this.value)) ||

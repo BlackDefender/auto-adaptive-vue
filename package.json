@@ -5,10 +5,13 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
+    "build-no-lint": "vue-cli-service build --skip-plugins @vue/cli-plugin-eslint",
+    "build-watch": "vue-cli-service build --watch",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
     "core-js": "^2.6.11",
+    "scss-parser": "^1.0.4",
     "vue": "^2.6.11"
   },
   "devDependencies": {

@@ -1,6 +1,7 @@
 import PseudoClasses from './PseudoClasses'
 import Logger from './Logger'
 import Utils from './Utils'
+import Settings from '@/engine/classes/Settings'
 
 let instanceId = Symbol('instanceId')
 let instanceSecurityKey = Symbol('instanceSecurityKey')
@@ -30,6 +31,7 @@ export default class BrowserStyles {
         })
     }
 
+    // add style rules for enabling pseudo classes state by adding usual classes
     modify () {
         const that = this
         this.styleSheetsList.forEach(function modifyStyleSheet (styleSheet) {
@@ -43,12 +45,43 @@ export default class BrowserStyles {
         })
     }
 
+    mediaRuleMatches (styleRule) {
+        const parseCondition = (conditionStr) => {
+            const conditionArray = conditionStr
+                .replace('(', '')
+                .replace(')', '')
+                .split(':')
+                .map(item => item.trim())
+            return {
+                conditon: conditionArray[0],
+                value: parseInt(conditionArray[1])
+            }
+        }
+
+        const settings = Settings.getInstance()
+        let fromWidth = parseInt(settings.fromWidth)
+        let toWidth = parseInt(settings.toWidth)
+        // width always from bigger to smaller
+        if (toWidth > fromWidth) {
+            [fromWidth, toWidth] = [toWidth, fromWidth]
+        }
+        const rule = parseCondition(styleRule.conditionText)
+        if (rule.conditon === 'min-width' && rule.value > fromWidth) {
+            return false
+        }
+        if (rule.conditon === 'max-width' && rule.value < toWidth) {
+            return false
+        }
+        return true
+    }
+
     getPropertiesFromStylesheets (selector) {
         let styles = {}
 
         const styleRuleMatchSelector = (styleRule) => {
             return styleRule.selectorText === selector ||
                 styleRule.selectorText.split(',').map(item => item.trim()).includes(selector) ||
+                styleRule.selectorText.split(',').map(item => item.trim()).map(item => item.replaceAll('::', ':')).includes(selector.replaceAll('::', ':')) ||
                 this.constructor._selectorsAsArraysAreEqual(styleRule.selectorText, selector)
         }
 
@@ -60,6 +93,7 @@ export default class BrowserStyles {
 
             Array.from(styleSheet.cssRules)
                 .filter(styleRule => styleRule.constructor === CSSMediaRule)
+                .filter(mediaRule => this.mediaRuleMatches(mediaRule))
                 .forEach(parseStylesheet)
         }
 
