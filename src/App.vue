@@ -145,7 +145,9 @@ export default {
         const handler = {
             set (target, prop, val) {
                 target[prop] = val
-                localStorage.setItem('autoAdaptiveSettings', JSON.stringify(target))
+                if (localStorage) {
+                    localStorage.setItem('autoAdaptiveSettings', JSON.stringify(target))
+                }
                 return true
             }
         }

@@ -149,7 +149,8 @@ export default class StyleProperty {
             'padding-top',
             'right',
             'top',
-            'width'
+            'width',
+            'grid-gap'
         ].includes(this.name)
     }
 }

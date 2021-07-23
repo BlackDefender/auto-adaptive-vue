@@ -1,6 +1,6 @@
 const loadSettingsFromLocalStorage = (storageKey, defaultSettings) => {
     const settings = defaultSettings
-    if (localStorage) {
+    if (localStorage !== undefined) {
         const loadedSettingsStr = localStorage.getItem(storageKey)
         if (loadedSettingsStr) {
             try {

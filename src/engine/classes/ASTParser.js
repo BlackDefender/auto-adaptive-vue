@@ -51,6 +51,9 @@ export default class ASTParser {
         case 'parentheses':
             stringValue = `(${this._reduceAstItemValue(astItem)})`
             break
+        case 'attribute':
+            stringValue = `[${this._reduceAstItemValue(astItem)}]`
+            break
         default: // punctuation, space, atkeyword, identifier, number, operator, string, declaration, punctuation, value
             if (typeof astItem.value === 'string') {
                 stringValue = astItem.value

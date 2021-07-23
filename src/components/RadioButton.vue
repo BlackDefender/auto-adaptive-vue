@@ -15,11 +15,9 @@ export default {
             required: true
         },
         value: {
-            type: Number,
             required: true
         },
         ownValue: {
-            type: Number,
             required: true
         }
     },
