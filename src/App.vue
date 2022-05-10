@@ -20,12 +20,29 @@
 
             <div class="text-input-container">
                 <span class="input-title">From: </span>
-                <input type="number" class="text-input" v-model="settings.fromWidth" @focus="$event.target.select()">
+                <div class="input-wrap">
+                    <input type="number"
+                           @focusin="fromWidthSelectActive = true"
+                           @focusout="fromWidthSelectActive = false"
+                           class="text-input"
+                           v-model="settings.fromWidth"
+                           @focus="$event.target.select()">
+                    <WidthSelect v-bind:is-active="fromWidthSelectActive" v-model="settings.fromWidth"></WidthSelect>
+                </div>
                 <div class="dimension">px</div>
             </div>
             <div class="text-input-container input-container-width-checkbox">
                 <span class="input-title">To: </span>
-                <input type="number" class="text-input" v-model="settings.toWidth" @focus="$event.target.select()" v-bind:disabled="toWidthByWindowWidth">
+                <div class="input-wrap">
+                    <input type="number"
+                           @focusin="toWidthSelectActive = true"
+                           @focusout="toWidthSelectActive = false"
+                           class="text-input"
+                           v-model="settings.toWidth"
+                           @focus="$event.target.select()"
+                           v-bind:disabled="toWidthByWindowWidth">
+                    <WidthSelect v-bind:is-active="toWidthSelectActive" v-model="settings.toWidth"></WidthSelect>
+                </div>
                 <div class="dimension">px</div>
                 <Checkbox title="Use window width" v-model="toWidthByWindowWidth"></Checkbox>
             </div>
@@ -66,6 +83,7 @@
 import CodeContainer from './components/CodeContainer'
 import Checkbox from './components/Checkbox'
 import RadioButton from './components/RadioButton'
+import WidthSelect from '@/components/WidthSelect'
 import Logger from './engine/classes/Logger'
 import makeAdaptive from './engine/makeAdaptive'
 import loadSettingsFromLocalStorage from './loadSettingsFromLocalStorage'
@@ -84,18 +102,21 @@ export default {
             wrapIntoMedia: true,
             shake: true,
             unlockToStartValue: false,
-            layoutWidth: '',
+            layoutWidth: 1366,
             parser: 'ast'
         },
         input: '',
         output: '',
         calculateButtonIsBlocked: false,
-        toWidthByWindowWidth: false
+        toWidthByWindowWidth: false,
+        fromWidthSelectActive: false,
+        toWidthSelectActive: false
     }),
     components: {
         CodeContainer,
         Checkbox,
-        RadioButton
+        RadioButton,
+        WidthSelect
     },
     watch: {
         toWidthByWindowWidth: function (newVal) {
@@ -184,6 +205,7 @@ export default {
         max-width: 100%;
         max-height: 100%;
         font-family: Helvetica, Arial, sans-serif;
+        color: #000000;
 
         &.active {
             display: block;
@@ -276,6 +298,7 @@ export default {
             }
 
             .text-input-container {
+                position: relative;
                 display: flex;
                 align-items: center;
                 margin: 0 0 10px;
@@ -284,6 +307,10 @@ export default {
                     text-align: right;
                     width: 100px;
                     padding: 0 10px 0 0;
+                }
+
+                .input-wrap{
+                    position: relative;
                 }
 
                 .text-input {
