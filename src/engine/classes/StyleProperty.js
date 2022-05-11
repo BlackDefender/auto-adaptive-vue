@@ -150,7 +150,10 @@ export default class StyleProperty {
             'right',
             'top',
             'width',
-            'grid-gap'
+            'grid-gap',
+            'column-gap',
+            'row-gap',
+            'gap'
         ].includes(this.name)
     }
 }
